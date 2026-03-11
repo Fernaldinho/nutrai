@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Users, Plus, Search, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 import DataTable from '@/components/ui/DataTable';
 import { patientService } from '@/services/patientService';
-import { createPatient, deletePatient } from '@/app/actions/patients';
+import { createPatient, deletePatient, updatePatient } from '@/app/actions/patients';
 
 export default function PacientesPage() {
   const [patients, setPatients] = useState([]);
@@ -15,6 +15,8 @@ export default function PacientesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingPatient, setEditingPatient] = useState(null);
 
   // Colunas da tabela
   const patientColumns = [
@@ -39,7 +41,16 @@ export default function PacientesPage() {
       label: 'Ações',
       render: (_, item) => (
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button className="btn-icon" title="Editar"><Edit size={16} /></button>
+          <button 
+            className="btn-icon" 
+            title="Editar"
+            onClick={() => {
+              setEditingPatient(item);
+              setIsEditModalOpen(true);
+            }}
+          >
+            <Edit size={16} />
+          </button>
           <button 
             className="btn-icon btn-icon--danger" 
             title="Excluir"
@@ -95,6 +106,24 @@ export default function PacientesPage() {
       alert('Erro: ' + res.error);
     } else {
       setIsModalOpen(false);
+      fetchPatients();
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingPatient) return;
+    
+    setIsSubmitting(true);
+    const formData = new FormData(e.target);
+    const res = await updatePatient(editingPatient.id, formData);
+    
+    if (res.error) {
+      alert('Erro ao atualizar: ' + res.error);
+    } else {
+      setIsEditModalOpen(false);
+      setEditingPatient(null);
       fetchPatients();
     }
     setIsSubmitting(false);
@@ -183,6 +212,48 @@ export default function PacientesPage() {
                 <button type="button" className="btn btn--outline" onClick={() => setIsModalOpen(false)}>Cancelar</button>
                 <button type="submit" className="btn btn--primary" disabled={isSubmitting}>
                   {isSubmitting ? 'Salvando...' : 'Salvar Paciente'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal - Editar Paciente */}
+      {isEditModalOpen && editingPatient && (
+        <div className="modal-overlay" onClick={() => setIsEditModalOpen(false)}>
+          <div className="modal-content animate-fade-in-up" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Editar Paciente</h2>
+              <button className="modal-close" onClick={() => setIsEditModalOpen(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleEditSubmit}>
+              <div className="form-group">
+                <label className="form-label">Nome Completo</label>
+                <input type="text" name="name" className="form-input" required defaultValue={editingPatient.name} placeholder="Ex: Maria Silva" />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="form-group">
+                  <label className="form-label">Email</label>
+                  <input type="email" name="email" className="form-input" defaultValue={editingPatient.email} placeholder="email@exemplo.com" />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">WhatsApp/Telefone</label>
+                  <input type="text" name="phone" className="form-input" defaultValue={editingPatient.phone} placeholder="(00) 00000-0000" />
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Data de Nascimento</label>
+                <input type="date" name="birth_date" className="form-input" defaultValue={editingPatient.birth_date ? new Date(editingPatient.birth_date).toISOString().split('T')[0] : ''} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Observações</label>
+                <textarea name="notes" className="form-input" rows="3" defaultValue={editingPatient.notes} placeholder="Histórico breve, restrições..."></textarea>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn--outline" onClick={() => setIsEditModalOpen(false)}>Cancelar</button>
+                <button type="submit" className="btn btn--primary" disabled={isSubmitting}>
+                  {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
                 </button>
               </div>
             </form>
