@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import { 
   User, Shield, MapPin, Link as LinkIcon, Users, Paintbrush, 
-  CreditCard, Coins, MessageSquare, Phone, Upload, Save, XCircle, Map, UserCircle
+  CreditCard, MessageSquare, Phone, Upload, Save, XCircle, Map, UserCircle
 } from 'lucide-react';
 import { getSettingsProfile, updateProfileSettings, listLocations, createLocation, deleteLocation } from '@/app/actions/settings';
 
@@ -16,7 +16,6 @@ const SETTINGS_TABS = [
   { id: 'membros', label: 'Membros', icon: Users },
   { id: 'customizacao', label: 'Customização e app', icon: Paintbrush },
   { id: 'assinatura', label: 'Assinatura', icon: CreditCard },
-  { id: 'creditos', label: 'Créditos', icon: Coins },
   { id: 'mensagens', label: 'Mensagens', icon: MessageSquare },
   { id: 'whatsapp', label: 'WhatsApp', icon: Phone },
 ];
@@ -360,7 +359,7 @@ export default function ConfiguracoesPage() {
           </div>
         );
 
-      // Membros, Créditos, Mensagens
+      // Membros, Mensagens
       default:
         const activeItem = SETTINGS_TABS.find(t => t.id === activeTab);
         return (
