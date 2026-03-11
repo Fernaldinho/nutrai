@@ -15,8 +15,9 @@ import {
   X,
   Apple,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { logout } from '@/app/actions/auth';
+import { createClient } from '@/lib/supabase';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -34,6 +35,36 @@ const bottomItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [userName, setUserName] = useState('Carregando...');
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', user.id)
+          .single();
+        
+        const name = profile?.name || user.email?.split('@')[0] || 'Nutricionista';
+        setUserName(name);
+      } else {
+        setUserName('Usuário Desconectado');
+      }
+    }
+
+    fetchUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      fetchUser();
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
 
   const isActive = (href) => {
     if (href === '/') return pathname === '/';
@@ -114,9 +145,11 @@ export default function Sidebar() {
 
         <div className="sidebar__footer">
           <div className="sidebar__user">
-            <div className="sidebar__avatar">DR</div>
+            <div className="sidebar__avatar" title={userName}>
+              {userName === 'Carregando...' ? '...' : userName.substring(0, 2).toUpperCase()}
+            </div>
             <div className="sidebar__user-info">
-              <div className="sidebar__user-name">Dra. Renata Silva</div>
+              <div className="sidebar__user-name" title={userName}>{userName}</div>
               <div className="sidebar__user-role">Nutricionista</div>
             </div>
             <form action={logout}>
