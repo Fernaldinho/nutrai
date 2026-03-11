@@ -3,6 +3,22 @@
 import { createClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
 
+export async function listPatients() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from('patients')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('name');
+    
+  if (error) return [];
+  return data || [];
+}
+
 export async function createPatient(formData) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
