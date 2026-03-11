@@ -25,6 +25,7 @@ export async function createMedicalRecord(formData) {
   if (error) return { error: error.message };
 
   revalidatePath(`/patients/${recordData.patient_id}`);
+  revalidatePath('/medical-records');
   return { data };
 }
 
@@ -43,5 +44,33 @@ export async function deleteMedicalRecord(id, patientId) {
   if (error) return { error: error.message };
 
   if (patientId) revalidatePath(`/patients/${patientId}`);
+  revalidatePath('/medical-records');
   return { success: true };
+}
+
+export async function updateMedicalRecord(id, formData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { error: 'Não autorizado' };
+
+  const recordData = {
+    patient_id: formData.get('patient_id'),
+    date: formData.get('date'),
+    content: formData.get('content'),
+    diagnosis: formData.get('diagnosis'),
+  };
+
+  const { data, error } = await supabase
+    .from('medical_records')
+    .update(recordData)
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select();
+
+  if (error) return { error: error.message };
+
+  if (recordData.patient_id) revalidatePath(`/patients/${recordData.patient_id}`);
+  revalidatePath('/medical-records');
+  return { data };
 }
