@@ -8,7 +8,6 @@ import {
   CalendarDays,
   BookOpen,
   DollarSign,
-  Library,
   Settings,
   LogOut,
   Menu,
@@ -25,7 +24,6 @@ const navItems = [
   { href: '/agenda', label: 'Agenda', icon: CalendarDays },
   { href: '/medical-records', label: 'Prontuários', icon: BookOpen },
   { href: '/financeiro', label: 'Financeiro', icon: DollarSign },
-  { href: '/biblioteca', label: 'Biblioteca', icon: Library },
 ];
 
 const bottomItems = [
