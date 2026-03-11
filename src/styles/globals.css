@@ -1497,3 +1497,65 @@ img {
   font-size: 12px;
 }
 
+/* ═══════════════════════════════════════════
+   DARK THEME (prefers-color-scheme)
+   ═══════════════════════════════════════════ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Neutrals - Inverted for dark mode */
+    --gray-25: #0f172a;
+    --gray-50: #1e293b;
+    --gray-100: #334155;
+    --gray-200: #475569;
+    --gray-300: #64748b;
+    --gray-400: #94a3b8;
+    --gray-500: #cbd5e1;
+    --gray-600: #e2e8f0;
+    --gray-700: #f1f5f9;
+    --gray-800: #f8fafc;
+    --gray-900: #ffffff;
+    --gray-950: #ffffff;
+
+    /* Surfaces */
+    --bg-primary: #020617;
+    --bg-secondary: #0f172a;
+    --bg-sidebar: #010409;
+    --bg-card: #0f172a;
+    --bg-input: #1e293b;
+
+    /* Text */
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+
+    /* Borders */
+    --border-light: #334155;
+    --border-medium: #475569;
+  }
+
+  /* Calendar Dark Mode Adjustments */
+  .calendar-day:hover:not(.calendar-day--empty) {
+    background: var(--primary-900);
+    color: var(--primary-300);
+  }
+  .calendar-day--selected {
+    background: var(--primary-900);
+    border-color: var(--primary-500);
+    color: var(--primary-100);
+  }
+  .appointment-mini-item {
+    background: var(--gray-50);
+    border-color: var(--border-light);
+  }
+  .appointment-mini-item:hover {
+    border-color: var(--primary-600);
+  }
+  .google-connect-btn {
+    background: var(--bg-card);
+    border-color: var(--border-medium);
+  }
+  .google-connect-btn:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-300);
+  }
+}
