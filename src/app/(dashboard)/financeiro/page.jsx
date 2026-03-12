@@ -4,9 +4,8 @@ import { useState, useEffect } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import { Plus, Download, TrendingUp, TrendingDown, DollarSign, Clock, BarChart3 } from 'lucide-react';
 import DataTable from '@/components/ui/DataTable';
-import { financialService } from '@/services/financialService';
-import { patientService } from '@/services/patientService';
-import { registerPayment, deletePayment } from '@/app/actions/financial';
+import { registerPayment, deletePayment, listPayments } from '@/app/actions/financial';
+import { listPatients } from '@/app/actions/patients';
 
 export default function FinanceiroPage() {
   const [payments, setPayments] = useState([]);
@@ -69,9 +68,10 @@ export default function FinanceiroPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      // Usando Server Actions para maior confiabilidade
       const [paymentsData, patientsData] = await Promise.all([
-        financialService.listPayments(),
-        patientService.listPatients()
+        listPayments(),
+        listPatients()
       ]);
 
       setPayments(paymentsData.map(p => ({

@@ -48,3 +48,18 @@ export async function deletePayment(id) {
   revalidatePath('/financeiro');
   return { success: true };
 }
+export async function listPayments() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from('payments')
+    .select('*, patients(name)')
+    .eq('user_id', user.id)
+    .order('date', { ascending: false });
+
+  if (error) return [];
+  return data || [];
+}
