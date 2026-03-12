@@ -137,11 +137,21 @@ export default function ConfiguracoesPage() {
             </p>
 
             <form onSubmit={handleSaveProfile}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '32px', paddingBottom: '32px', borderBottom: '1px solid var(--border-light)' }}>
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: 'row', 
+                flexWrap: 'wrap', 
+                alignItems: 'center', 
+                gap: '24px', 
+                marginBottom: '32px', 
+                paddingBottom: '32px', 
+                borderBottom: '1px solid var(--border-light)' 
+              }}>
                 <div style={{ 
                   width: '80px', height: '80px', borderRadius: '50%', 
                   background: 'var(--bg-secondary)', border: '2px dashed var(--border-medium)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)', overflow: 'hidden'
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)', overflow: 'hidden',
+                  flexShrink: 0
                 }}>
                   {avatarPreview ? (
                      <img src={avatarPreview} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -149,9 +159,9 @@ export default function ConfiguracoesPage() {
                      <User size={32} />
                   )}
                 </div>
-                <div>
+                <div style={{ minWidth: '200px', flex: 1 }}>
                   <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/png, image/jpeg, image/gif" style={{ display: 'none' }} />
-                  <button type="button" className="btn btn--outline" onClick={() => fileInputRef.current.click()} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', background: 'var(--bg-card)', border: '1px solid var(--border-medium)', padding: '6px 12px', borderRadius: '6px' }}>
+                  <button type="button" className="btn btn--outline" onClick={() => fileInputRef.current.click()} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', background: 'var(--bg-card)', border: '1px solid var(--border-medium)', padding: '6px 12px', borderRadius: '6px', minHeight: 'unset' }}>
                     <Upload size={16} /> Carregar nova foto
                   </button>
                   <p style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>JPG, GIF ou PNG. Tamanho máximo de 2MB.</p>
@@ -219,7 +229,7 @@ export default function ConfiguracoesPage() {
               Adicione e gerencie os lugares onde você realiza suas consultas (clínicas, online, etc).
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.5fr)', gap: '24px', alignItems: 'start' }}>
+            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: 0 }}>
               {/* Form Add */}
               <div className="card" style={{ padding: '20px', border: '1px solid var(--border-light)', boxShadow: 'var(--shadow-sm)' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '16px' }}>Novo Local</h3>
@@ -246,12 +256,12 @@ export default function ConfiguracoesPage() {
                   </div>
                 ) : (
                   locations.map(loc => (
-                    <div key={loc.id} style={{ padding: '16px', background: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <h4 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>{loc.name}</h4>
-                        {loc.address && <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>{loc.address}</p>}
+                    <div key={loc.id} style={{ padding: '16px', background: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <h4 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{loc.name}</h4>
+                        {loc.address && <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '4px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{loc.address}</p>}
                       </div>
-                      <button onClick={() => handleRemoveLoc(loc.id)} style={{ color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }} title="Remover">
+                      <button onClick={() => handleRemoveLoc(loc.id)} style={{ color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px', flexShrink: 0 }} title="Remover">
                         <XCircle size={18} />
                       </button>
                     </div>
@@ -383,61 +393,34 @@ export default function ConfiguracoesPage() {
       />
 
       {/* Grid estilo painel SaaS */}
-      <div className="card" style={{ display: 'grid', gridTemplateColumns: '1fr', minHeight: '600px', gap: '0', padding: 0, overflow: 'hidden' }}>
+      <div className="settings-container">
         
         {/* Menu Lateral adaptável para telas grandes */}
-        <div style={{ display: 'flex' }}>
-          <div style={{ width: '260px', background: 'var(--bg-secondary)', borderRight: '1px solid var(--border-light)', padding: '24px 16px', flexShrink: 0 }}>
-            <h3 style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-tertiary)', fontWeight: '700', marginBottom: '16px', paddingLeft: '12px' }}>
-              Gestão da Plataforma
-            </h3>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {SETTINGS_TABS.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
-                      padding: '12px 14px', borderRadius: '8px', border: 'none',
-                      background: isActive ? 'var(--primary-50)' : 'transparent',
-                      color: isActive ? 'var(--primary-600)' : 'var(--text-secondary)',
-                      fontWeight: isActive ? '600' : '500', fontSize: '14px',
-                      cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s ease',
-                      position: 'relative',
-                    }}
-                    onMouseOver={(e) => {
-                      if (!isActive) {
-                         e.currentTarget.style.background = 'var(--gray-50)';
-                         e.currentTarget.style.color = 'var(--text-primary)';
-                      }
-                    }}
-                    onMouseOut={(e) => {
-                      if (!isActive) {
-                         e.currentTarget.style.background = 'transparent';
-                         e.currentTarget.style.color = 'var(--text-secondary)';
-                      }
-                    }}
-                  >
-                    <Icon size={18} style={{ opacity: isActive ? 1 : 0.6 }} />
-                    {tab.label}
-                    
-                    {/* Indicador sutil esquerdo pra tab ativa */}
-                    {isActive && (
-                      <div style={{ position: 'absolute', left: 0, top: '15%', height: '70%', width: '3px', background: 'var(--primary-500)', borderRadius: '0 4px 4px 0' }} />
-                    )}
-                  </button>
-                )
-              })}
-            </nav>
-          </div>
+        <div className="settings-sidebar">
+          <h3 style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-tertiary)', fontWeight: '700', marginBottom: '16px', paddingLeft: '12px' }}>
+            Gestão da Plataforma
+          </h3>
+          <nav className="settings-nav">
+            {SETTINGS_TABS.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`settings-tab-btn ${isActive ? 'settings-tab-btn--active' : ''}`}
+                >
+                  <Icon size={18} style={{ opacity: isActive ? 1 : 0.6 }} />
+                  {tab.label}
+                </button>
+              )
+            })}
+          </nav>
+        </div>
 
-          {/* Área Principal Dinâmica */}
-          <div style={{ flex: 1, padding: '40px', background: 'var(--bg-primary)', overflowY: 'auto' }}>
-            {renderContent()}
-          </div>
+        {/* Área Principal Dinâmica */}
+        <div className="settings-content">
+          {renderContent()}
         </div>
       </div>
 
