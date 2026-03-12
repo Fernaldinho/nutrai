@@ -1720,4 +1720,10 @@ img {
     background: var(--gray-50);
     border-color: var(--gray-300);
   }
+
+  /* Google Calendar Dark Mode Fix */
+  iframe[src*="calendar.google.com"] {
+    filter: invert(0.9) hue-rotate(180deg);
+    background: #0f172a !important;
+  }
 }

@@ -2,7 +2,7 @@ import { Users, CalendarDays, BookOpen, DollarSign, Calendar, Clock } from 'luci
 import Link from 'next/link';
 import StatCard from '@/components/ui/StatCard';
 import DataTable from '@/components/ui/DataTable';
-import CalendarCard from '@/components/dashboard/CalendarCard';
+import GoogleCalendarEmbed from '@/components/agenda/GoogleCalendarEmbed';
 import { createClient } from '@/lib/supabase-server';
 
 function getGreeting(userName) {
@@ -197,7 +197,7 @@ export default async function DashboardPage() {
 
         {/* Coluna da Direita: Calendário */}
         <div className="animate-fade-in-up animate-delay-4">
-          <CalendarCard appointments={allAppointments?.data || []} />
+          <GoogleCalendarEmbed />
         </div>
       </div>
     </div>

@@ -6,7 +6,7 @@ import { CalendarDays, Plus, Clock, User, CheckCircle, XCircle } from 'lucide-re
 import DataTable from '@/components/ui/DataTable';
 import { createAppointment, updateAppointmentStatus, deleteAppointment, listAppointments } from '@/app/actions/appointments';
 import { listPatients } from '@/app/actions/patients';
-import CalendarCard from '@/components/dashboard/CalendarCard';
+import GoogleCalendarEmbed from '@/components/agenda/GoogleCalendarEmbed';
 
 export default function AgendaPage() {
   const [appointments, setAppointments] = useState([]);
@@ -117,25 +117,28 @@ export default function AgendaPage() {
         }
       />
 
-      <div className="dashboard-grid">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div className="card animate-fade-in-up">
-            {loading ? (
-              <div style={{ padding: '40px', textAlign: 'center' }}>Carregando agenda...</div>
-            ) : appointments.length > 0 ? (
-              <DataTable columns={appointmentColumns} data={appointments} />
-            ) : (
-              <div className="empty-state">
-                <div className="empty-state__icon"><CalendarDays size={28} /></div>
-                <div className="empty-state__title">Nenhuma consulta agendada</div>
-                <div className="empty-state__text">Clique em "Nova Consulta" para organizar seu dia.</div>
-              </div>
-            )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+        {/* Lista de Agendamentos */}
+        <div className="card animate-fade-in-up">
+          <div className="card__header" style={{ marginBottom: '16px' }}>
+            <h2 className="card__title">Consultas Agendadas</h2>
           </div>
+          {loading ? (
+            <div style={{ padding: '40px', textAlign: 'center' }}>Carregando agenda...</div>
+          ) : appointments.length > 0 ? (
+            <DataTable columns={appointmentColumns} data={appointments} />
+          ) : (
+            <div className="empty-state">
+              <div className="empty-state__icon"><CalendarDays size={28} /></div>
+              <div className="empty-state__title">Nenhuma consulta agendada</div>
+              <div className="empty-state__text">Clique em "Nova Consulta" para organizar seu dia.</div>
+            </div>
+          )}
         </div>
         
-        <div className="animate-fade-in-up animate-delay-2">
-           <CalendarCard appointments={appointments} />
+        {/* Calendário Full Width */}
+        <div className="animate-fade-in-up animate-delay-2" style={{ height: '700px' }}>
+           <GoogleCalendarEmbed />
         </div>
       </div>
 

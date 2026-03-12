@@ -36,6 +36,7 @@ export async function updateProfileSettings(formData) {
   if (rawData.whatsapp_message !== undefined) updates.whatsapp_message = rawData.whatsapp_message;
   if (rawData.custom_theme !== undefined) updates.custom_theme = rawData.custom_theme;
   if (rawData.custom_color !== undefined) updates.custom_color = rawData.custom_color;
+  if (rawData.google_calendar_id !== undefined) updates.google_calendar_id = rawData.google_calendar_id;
 
   const { data, error } = await supabase
     .from('profiles')
