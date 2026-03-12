@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import { 
-  User, Shield, MapPin, Link as LinkIcon, Users, Paintbrush, 
+  User, Shield, MapPin, Link as LinkIcon, Paintbrush, 
   CreditCard, MessageSquare, Phone, Upload, Save, XCircle, Map, UserCircle
 } from 'lucide-react';
 import { getSettingsProfile, updateProfileSettings, listLocations, createLocation, deleteLocation, updateLocation } from '@/app/actions/settings';
@@ -14,7 +14,6 @@ const SETTINGS_TABS = [
   { id: 'seguranca', label: 'Segurança', icon: Shield },
   { id: 'locais', label: 'Locais', icon: MapPin },
   { id: 'agendamento', label: 'Link de agendamento', icon: LinkIcon },
-  { id: 'membros', label: 'Membros', icon: Users },
   { id: 'customizacao', label: 'Customização e app', icon: Paintbrush },
   { id: 'assinatura', label: 'Assinatura', icon: CreditCard },
   { id: 'mensagens', label: 'Mensagens', icon: MessageSquare },
