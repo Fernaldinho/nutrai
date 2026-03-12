@@ -153,6 +153,11 @@ export default function ConfiguracoesPage() {
     // ...
   };
 
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    alert('Link copiado para a área de transferência!');
+  };
+
   const MapPreview = ({ address }) => {
     if (!address) return null;
     const encodedAddress = encodeURIComponent(address);
@@ -379,36 +384,60 @@ export default function ConfiguracoesPage() {
         );
 
       case 'agendamento':
+        const publicUrl = typeof window !== 'undefined' ? `${window.location.origin}/${profile?.slug || ''}` : '';
         return (
           <div className="animate-fade-in-up">
-            <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px', color: 'var(--text-primary)' }}>Link Público</h2>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px', color: 'var(--text-primary)' }}>Link Público de Agendamento</h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '14px' }}>
-              Defina a URL por onde os seus pacientes poderão ver seus serviços e agendar sozinhos.
+              Este é o seu endereço único onde os pacientes podem agendar consultas e ver seus locais de atendimento.
             </p>
 
-            <form onSubmit={handleSaveSimulated} style={{ maxWidth: '600px', display: 'grid', gap: '20px' }}>
+            <div className="card" style={{ maxWidth: '600px', padding: '24px', border: '1px solid var(--border-light)', boxShadow: 'var(--shadow-sm)' }}>
               <div className="form-group">
-                <label className="form-label">Nome de usuário (Link)</label>
-                <div style={{ display: 'flex', alignItems: 'center', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+                <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Seu Link Personalizado</span>
+                  <span style={{ fontSize: '11px', color: 'var(--success-600)', fontWeight: '600' }}>● Gerado automaticamente</span>
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-light)', background: 'var(--bg-secondary)' }}>
                   <span style={{ 
-                    padding: '10px 16px', background: 'var(--bg-secondary)', 
+                    padding: '12px 16px', background: 'var(--bg-tertiary)', 
                     borderRight: '1px solid var(--border-light)',
-                    color: 'var(--text-tertiary)', fontSize: '14px' 
+                    color: 'var(--text-tertiary)', fontSize: '14px', fontWeight: '500'
                   }}>
                     nutrisaas.com/
                   </span>
                   <input 
                     type="text" 
-                    name="slug"
                     className="form-input" 
-                    style={{ border: 'none', borderRadius: '0', flex: 1, boxShadow: 'none' }} 
-                    placeholder="dr-seu-nome" 
-                    defaultValue={profile?.slug || profile?.name?.toLowerCase().replace(/\s+/g, '-') || 'usuario'}
+                    readOnly
+                    style={{ border: 'none', borderRadius: '0', flex: 1, boxShadow: 'none', background: 'transparent', fontWeight: '600', color: 'var(--primary-600)' }} 
+                    value={profile?.slug || ''}
                   />
                 </div>
+                <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '12px' }}>
+                  O link é atualizado automaticamente sempre que você altera seu nome profissional nas configurações de conta.
+                </p>
               </div>
-              <button type="submit" className="btn btn--primary" style={{ width: 'fit-content' }}>Salvar Endereço</button>
-            </form>
+              
+              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                <button 
+                  onClick={() => copyToClipboard(publicUrl)}
+                  className="btn btn--primary" 
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <LinkIcon size={18} /> Copiar link público
+                </button>
+                <a 
+                  href={publicUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="btn btn--outline"
+                  style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <Globe size={18} style={{ marginRight: '8px' }} /> Visualizar Página
+                </a>
+              </div>
+            </div>
           </div>
         );
 

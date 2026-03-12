@@ -20,6 +20,35 @@ export async function getSettingsProfile() {
   return { ...data, email: user.email };
 }
 
+async function generateUniqueSlug(supabase, name, userId) {
+  const baseSlug = name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .replace(/[^a-z0-9]/g, '');    // Remove tudo que não for letra ou número
+
+  let slug = baseSlug;
+  let counter = 1;
+  let exists = true;
+
+  while (exists) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('slug', slug)
+      .neq('id', userId)
+      .maybeSingle();
+
+    if (!data) {
+      exists = false;
+    } else {
+      counter++;
+      slug = `${baseSlug}${counter}`;
+    }
+  }
+  return slug;
+}
+
 export async function updateProfileSettings(formData) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -37,7 +66,14 @@ export async function updateProfileSettings(formData) {
   if (rawData.custom_theme !== undefined) updates.custom_theme = rawData.custom_theme;
   if (rawData.custom_color !== undefined) updates.custom_color = rawData.custom_color;
   if (rawData.google_calendar_id !== undefined) updates.google_calendar_id = rawData.google_calendar_id;
-  if (rawData.slug !== undefined) updates.slug = rawData.slug;
+  
+  // Geração automática de SLUG se o nome foi alterado ou se não existe slug
+  if (updates.name) {
+    const { data: currentProfile } = await supabase.from('profiles').select('slug').eq('id', user.id).single();
+    if (!currentProfile?.slug || updates.name) {
+       updates.slug = await generateUniqueSlug(supabase, updates.name, user.id);
+    }
+  }
 
   const { data, error } = await supabase
     .from('profiles')
