@@ -60,3 +60,25 @@ export async function logout() {
   await supabase.auth.signOut();
   redirect('/login');
 }
+export async function updatePassword(formData) {
+  const newPassword = formData.get('newPassword');
+  const confirmPassword = formData.get('confirmPassword');
+
+  if (!newPassword || newPassword.length < 6) {
+    return { error: 'A nova senha deve ter pelo menos 6 caracteres' };
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: 'As senhas não coincidem' };
+  }
+
+  const supabase = createClient();
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+  if (error) {
+    console.error('⛔ Supabase Password Update Error:', error.message);
+    return { error: error.message };
+  }
+
+  return { success: true };
+}

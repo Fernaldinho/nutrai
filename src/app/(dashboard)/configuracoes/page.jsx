@@ -7,6 +7,7 @@ import {
   CreditCard, MessageSquare, Phone, Upload, Save, XCircle, Map, UserCircle
 } from 'lucide-react';
 import { getSettingsProfile, updateProfileSettings, listLocations, createLocation, deleteLocation } from '@/app/actions/settings';
+import { updatePassword } from '@/app/actions/auth';
 
 const SETTINGS_TABS = [
   { id: 'conta', label: 'Conta', icon: User },
@@ -69,12 +70,33 @@ export default function ConfiguracoesPage() {
   const handleSavePassword = async (e) => {
     e.preventDefault();
     setIsSaving(true);
-    // Simula a troca de senha (não está implementado no backend ainda para não deslogar o teste)
-    setTimeout(() => {
-      alert('Senha atualizada em sistema!');
-      e.target.reset();
+    
+    const formData = new FormData(e.target);
+    const newPass = formData.get('newPassword');
+    const confirmPass = formData.get('confirmPassword');
+
+    if (!newPass || newPass.length < 6) {
+      alert('A nova senha deve ter no mínimo 6 caracteres.');
       setIsSaving(false);
-    }, 1000);
+      return;
+    }
+
+    if (newPass !== confirmPass) {
+      alert('As senhas não coincidem!');
+      setIsSaving(false);
+      return;
+    }
+
+    const res = await updatePassword(formData);
+    
+    if (res?.error) {
+      alert('Erro ao atualizar senha: ' + res.error);
+    } else {
+      alert('Senha atualizada com sucesso!');
+      e.target.reset();
+    }
+    
+    setIsSaving(false);
   };
 
   const handleAddLocation = async (e) => {
