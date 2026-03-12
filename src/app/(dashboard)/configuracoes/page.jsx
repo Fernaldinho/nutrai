@@ -6,7 +6,7 @@ import {
   User, Shield, MapPin, Link as LinkIcon, Users, Paintbrush, 
   CreditCard, MessageSquare, Phone, Upload, Save, XCircle, Map, UserCircle
 } from 'lucide-react';
-import { getSettingsProfile, updateProfileSettings, listLocations, createLocation, deleteLocation } from '@/app/actions/settings';
+import { getSettingsProfile, updateProfileSettings, listLocations, createLocation, deleteLocation, updateLocation } from '@/app/actions/settings';
 import { updatePassword } from '@/app/actions/auth';
 
 const SETTINGS_TABS = [
@@ -28,6 +28,8 @@ export default function ConfiguracoesPage() {
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [editingLocation, setEditingLocation] = useState(null);
+  const [addressPreview, setAddressPreview] = useState('');
   const fileInputRef = useRef(null);
 
   const fetchData = async () => {
@@ -107,6 +109,22 @@ export default function ConfiguracoesPage() {
     if (res?.error) alert('Erro: ' + res.error);
     else {
       e.target.reset();
+      setAddressPreview('');
+      fetchData();
+    }
+    setIsSaving(false);
+  };
+
+  const handleUpdateLocation = async (e) => {
+    e.preventDefault();
+    if (!editingLocation) return;
+    setIsSaving(true);
+    const formData = new FormData(e.target);
+    const res = await updateLocation(editingLocation.id, formData);
+    if (res?.error) alert('Erro: ' + res.error);
+    else {
+      setEditingLocation(null);
+      setAddressPreview('');
       fetchData();
     }
     setIsSaving(false);
@@ -132,18 +150,28 @@ export default function ConfiguracoesPage() {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('O arquivo deve ter no máximo 2MB.');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
+    // ...
+  };
+
+  const MapPreview = ({ address }) => {
+    if (!address) return null;
+    const encodedAddress = encodeURIComponent(address);
+    const mapsUrl = `https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || ''}&q=${encodedAddress}`;
+    
+    // For trial/demo purposes without key, using search?q
+    const simpleEmbedUrl = `https://maps.google.com/maps?q=${encodedAddress}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+
+    return (
+      <div style={{ width: '100%', height: '200px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-light)', marginTop: '16px' }}>
+        <iframe
+          width="100%"
+          height="100%"
+          frameBorder="0" style={{ border: 0 }}
+          src={simpleEmbedUrl}
+          allowFullScreen
+        ></iframe>
+      </div>
+    );
   };
 
   const renderContent = () => {
@@ -251,44 +279,100 @@ export default function ConfiguracoesPage() {
               Adicione e gerencie os lugares onde você realiza suas consultas (clínicas, online, etc).
             </p>
 
-            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: 0 }}>
-              {/* Form Add */}
-              <div className="card" style={{ padding: '20px', border: '1px solid var(--border-light)', boxShadow: 'var(--shadow-sm)' }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '16px' }}>Novo Local</h3>
-                <form onSubmit={handleAddLocation}>
-                  <div className="form-group">
-                    <label className="form-label">Nome do Local</label>
-                    <input type="text" name="name" className="form-input" placeholder="Ex: Clínica Alpha, Online..." required />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Endereço Completo ou Link</label>
-                    <input type="text" name="address" className="form-input" placeholder="Ex: Av. Paulista, 1000 - SP" />
-                  </div>
-                  <button type="submit" className="btn btn--primary" disabled={isSaving} style={{ width: '100%' }}>Adicionar</button>
-                </form>
-              </div>
-              
-              {/* Lista */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>Locais Cadastrados ({locations.length})</h3>
-                {locations.length === 0 ? (
-                  <div style={{ padding: '24px', textAlign: 'center', background: 'var(--bg-card)', border: '1px dashed var(--border-medium)', borderRadius: 'var(--radius-md)' }}>
-                    <Map size={24} style={{ margin: '0 auto 8px', color: 'var(--text-tertiary)' }} />
-                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Nenhum local cadastrado.</p>
-                  </div>
-                ) : (
-                  locations.map(loc => (
-                    <div key={loc.id} style={{ padding: '16px', background: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ minWidth: 0 }}>
-                        <h4 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{loc.name}</h4>
-                        {loc.address && <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '4px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{loc.address}</p>}
+            <div className="dashboard-grid" style={{ gridTemplateColumns: '1fr 350px', gap: '32px' }}>
+              {/* Form Add / Edit */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div className="card" style={{ padding: '24px', border: '1px solid var(--border-light)', boxShadow: 'var(--shadow-sm)' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '16px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <MapPin size={18} color="var(--primary-500)" />
+                    {editingLocation ? 'Editar Local' : 'Novo Local'}
+                  </h3>
+                  <form onSubmit={editingLocation ? handleUpdateLocation : handleAddLocation}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Nome do Local</label>
+                        <input type="text" name="name" className="form-input" placeholder="Ex: Clínica Alpha, Online..." defaultValue={editingLocation?.name || ''} required />
                       </div>
-                      <button onClick={() => handleRemoveLoc(loc.id)} style={{ color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px', flexShrink: 0 }} title="Remover">
-                        <XCircle size={18} />
-                      </button>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Endereço Completo</label>
+                        <input 
+                          type="text" 
+                          name="address" 
+                          className="form-input" 
+                          placeholder="Ex: Av. Paulista, 1000 - SP" 
+                          defaultValue={editingLocation?.address || ''}
+                          onChange={(e) => setAddressPreview(e.target.value)}
+                        />
+                      </div>
                     </div>
-                  ))
-                )}
+                    
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button type="submit" className="btn btn--primary" disabled={isSaving} style={{ flex: 1 }}>
+                        {isSaving ? 'Processando...' : editingLocation ? 'Salvar Alterações' : 'Adicionar Local'}
+                      </button>
+                      {editingLocation && (
+                        <button type="button" className="btn btn--outline" onClick={() => { setEditingLocation(null); setAddressPreview(''); }}>
+                          Cancelar
+                        </button>
+                      )}
+                    </div>
+                  </form>
+
+                  {/* Preview do Mapa ao Digitar */}
+                  {(addressPreview || editingLocation?.address) && (
+                    <div style={{ marginTop: '24px' }}>
+                      <p style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-tertiary)', marginBottom: '8px', textTransform: 'uppercase' }}>Pré-visualização do Mapa</p>
+                      <MapPreview address={addressPreview || editingLocation?.address} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Lista */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '4px' }}>Locais Cadastrados ({locations.length})</h3>
+                  {locations.length === 0 ? (
+                    <div style={{ padding: '40px', textAlign: 'center', background: 'var(--bg-card)', border: '1px dashed var(--border-medium)', borderRadius: 'var(--radius-lg)' }}>
+                      <MapPin size={32} style={{ margin: '0 auto 12px', color: 'var(--text-tertiary)', opacity: 0.5 }} />
+                      <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Você ainda não cadastrou nenhum local.</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+                      {locations.map(loc => (
+                        <div key={loc.id} className="card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', transition: 'transform 0.2s', ':hover': { transform: 'translateY(-2px)' } }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div style={{ minWidth: 0 }}>
+                              <h4 style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>{loc.name}</h4>
+                              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{loc.address}</p>
+                            </div>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button onClick={() => { setEditingLocation(loc); setAddressPreview(''); }} style={{ color: 'var(--primary-600)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                                <Edit size={16} />
+                              </button>
+                              <button onClick={() => handleRemoveLoc(loc.id)} style={{ color: 'var(--danger-500)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                                <XCircle size={16} />
+                              </button>
+                            </div>
+                          </div>
+                          {loc.address && (
+                            <div style={{ height: '120px', borderRadius: '8px', overflow: 'hidden' }}>
+                              <MapPreview address={loc.address} />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Sidebar Info */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="card" style={{ padding: '20px', background: 'var(--primary-50)', border: '1px solid var(--primary-100)' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--primary-800)', marginBottom: '8px' }}>Google Maps</h4>
+                  <p style={{ fontSize: '13px', color: 'var(--primary-700)', lineHeight: '1.5' }}>
+                    O endereço inserido será utilizado para gerar o mapa de localização na sua página pública de agendamentos.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -315,10 +399,11 @@ export default function ConfiguracoesPage() {
                   </span>
                   <input 
                     type="text" 
+                    name="slug"
                     className="form-input" 
                     style={{ border: 'none', borderRadius: '0', flex: 1, boxShadow: 'none' }} 
                     placeholder="dr-seu-nome" 
-                    defaultValue={profile?.name?.toLowerCase().replace(/\s+/g, '-') || 'usuario'}
+                    defaultValue={profile?.slug || profile?.name?.toLowerCase().replace(/\s+/g, '-') || 'usuario'}
                   />
                 </div>
               </div>

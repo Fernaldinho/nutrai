@@ -35,6 +35,11 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='google_calendar_id') THEN
         ALTER TABLE public.profiles ADD COLUMN google_calendar_id text;
     END IF;
+
+    -- slug
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='slug') THEN
+        ALTER TABLE public.profiles ADD COLUMN slug text UNIQUE;
+    END IF;
 END $$;
 
 -- Notify PostgREST to reload schema cache

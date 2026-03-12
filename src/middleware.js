@@ -35,11 +35,14 @@ export async function middleware(request) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const publicRoutes = ['/login', '/register', '/forgot-password'];
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
+  const publicPaths = ['/login', '/register', '/forgot-password', '/auth'];
+  const dashboardPaths = ['/agenda', '/configuracoes', '/financeiro', '/medical-records', '/patients'];
+  
+  const isDashboardRoute = dashboardPaths.some((path) => pathname.startsWith(path)) || pathname === '/';
+  const isPublicRoute = publicPaths.some((path) => pathname.startsWith(path));
 
-  if (!isPublicRoute && !user) {
-    // Rota protegida e sem usuário -> redireciona pro login
+  if (isDashboardRoute && !user) {
+    // Rota do dashboard e sem usuário -> redireciona pro login
     const loginUrl = new URL('/login', request.url);
     return NextResponse.redirect(loginUrl);
   }

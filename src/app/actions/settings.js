@@ -37,6 +37,7 @@ export async function updateProfileSettings(formData) {
   if (rawData.custom_theme !== undefined) updates.custom_theme = rawData.custom_theme;
   if (rawData.custom_color !== undefined) updates.custom_color = rawData.custom_color;
   if (rawData.google_calendar_id !== undefined) updates.google_calendar_id = rawData.google_calendar_id;
+  if (rawData.slug !== undefined) updates.slug = rawData.slug;
 
   const { data, error } = await supabase
     .from('profiles')
@@ -111,4 +112,46 @@ export async function deleteLocation(id) {
 
   revalidatePath('/configuracoes');
   return { success: true };
+}
+export async function updateLocation(id, formData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { error: 'Não autorizado' };
+
+  const { data, error } = await supabase
+    .from('locations')
+    .update({
+      name: formData.get('name'),
+      address: formData.get('address'),
+    })
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select();
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/configuracoes');
+  return { data };
+}
+
+export async function getPublicProfileBySlug(slug) {
+  const supabase = createClient();
+  
+  // Perfil
+  const { data: profile, error: pError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (pError || !profile) return null;
+
+  // Locais
+  const { data: locations } = await supabase
+    .from('locations')
+    .select('*')
+    .eq('user_id', profile.id);
+
+  return { ...profile, locations: locations || [] };
 }
