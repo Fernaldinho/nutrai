@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import { BookOpen, Plus, Search, Edit, Trash2, Heart, HeartOff, Compass, LayoutList, User } from 'lucide-react';
-import { medicalRecordService } from '@/services/medicalRecordService';
-import { patientService } from '@/services/patientService';
-import { createMedicalRecord, updateMedicalRecord, deleteMedicalRecord } from '@/app/actions/medical-records';
+import { createMedicalRecord, updateMedicalRecord, deleteMedicalRecord, listMedicalRecords } from '@/app/actions/medical-records';
+import { listPatients } from '@/app/actions/patients';
 
 export default function ProntuariosPage() {
   const [records, setRecords] = useState([]);
@@ -31,9 +30,10 @@ export default function ProntuariosPage() {
   const fetchRecordsAndPatients = async () => {
     setLoading(true);
     try {
+      // Use Server Action for both to ensure session is passed
       const [recordsData, patientsData] = await Promise.all([
-        medicalRecordService.listRecords(),
-        patientService.listPatients()
+        listMedicalRecords(),
+        listPatients()
       ]);
       setRecords(recordsData);
       setPatients(patientsData);

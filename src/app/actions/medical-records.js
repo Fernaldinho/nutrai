@@ -74,3 +74,18 @@ export async function updateMedicalRecord(id, formData) {
   revalidatePath('/medical-records');
   return { data };
 }
+export async function listMedicalRecords() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from('medical_records')
+    .select('*, patients(name)')
+    .eq('user_id', user.id)
+    .order('date', { ascending: false });
+
+  if (error) return [];
+  return data || [];
+}
